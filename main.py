@@ -4,7 +4,7 @@ import pyautogui
 import time
 import threading
 import math
-from cursor_functions import move_cursor, right_click
+from cursor_functions import move_cursor, right_click, left_click
 
 cam = cv2.VideoCapture(0)
 
@@ -62,25 +62,35 @@ while True:
             pinky_finger_tip = handLandmark.landmark[20]
 
             thumb_tip_px = [int(thumb_tip.x * w), int(thumb_tip.y * h)]
-            index_finger_tip_px = [int(index_finger_tip.x * w), int(index_finger_tip.y * h)]
             middle_finger_tip_px = [int(middle_finger_tip.x * w), int(middle_finger_tip.y * h)]
-            # # ring_finger_tip_x, ring_finger_tip_y = int(ring_finger_tip.x * w), int(ring_finger_tip.y * h)
+            ring_finger_tip_px = [int(ring_finger_tip.x * w), int(ring_finger_tip.y * h)]
             # # pinky_finger_tip_x, pinky_finger_tip_y = int(pinky_finger_tip.x * w), int(pinky_finger_tip.y * h)
 
             #To do: Mouse Functionalities to Create (move, rightclick, leftclick, Doubleclick, drag, scroll)
 
-            # Move Cursor (using index)
-            margin = 10
+            pinch = False
+
+            # Move Cursor (using index finger)
+            margin = 5
 
             mouse_x = max(margin, min(int(index_finger_tip.x * screen_w), screen_w - margin))
             mouse_y = max(margin, min(int(index_finger_tip.y * screen_h), screen_h - margin))
             threading.Thread(target=move_cursor, args=(mouse_x, mouse_y), daemon=True).start()
 
             # Left Click
-            distance = euclidean_distance(thumb_tip_px, middle_finger_tip_px)
-            print(distance)
-            if distance < 30:
-                right_click(mouse_x, mouse_y)
+            lc_distance = euclidean_distance(thumb_tip_px, middle_finger_tip_px)
+            if lc_distance < 30:
+                left_click(mouse_x, mouse_y)
+
+            # Right Click
+            rc_distance = euclidean_distance(thumb_tip_px, ring_finger_tip_px)
+            print(rc_distance)
+            if rc_distance < 30:
+                if not pinch:
+                    right_click(mouse_x, mouse_y)
+                    pinch = True
+            else:
+                pinch = False
 
 
 
