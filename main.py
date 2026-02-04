@@ -3,7 +3,8 @@ import mediapipe as mp
 import pyautogui
 import time
 import threading
-from cursor_functions import move_cursor
+import math
+from cursor_functions import move_cursor, right_click
 
 cam = cv2.VideoCapture(0)
 
@@ -15,6 +16,9 @@ screen_w, screen_h = pyautogui.size()
 
 ptime = 0
 ctime = 0
+
+def euclidean_distance(x, y):
+    return math.sqrt((x[0] - y[0])**2 + (x[1] - y[1])**2)
 
 while True:
     _, frame = cam.read()
@@ -57,19 +61,28 @@ while True:
             ring_finger_tip = handLandmark.landmark[16]
             pinky_finger_tip = handLandmark.landmark[20]
 
-            thumb_tip_x, thumb_tip_y = int(thumb_tip.x * w), int(thumb_tip.y * h)
-            index_finger_tip_x, index_finger_tip_y = int(index_finger_tip.x * w), int(index_finger_tip.y * h)
-            middle_finger_tip_x, middle_finger_tip_y = int(middle_finger_tip.x * w), int(middle_finger_tip.y * h)
-            # ring_finger_tip_x, ring_finger_tip_y = int(ring_finger_tip.x * w), int(ring_finger_tip.y * h)
-            # pinky_finger_tip_x, pinky_finger_tip_y = int(pinky_finger_tip.x * w), int(pinky_finger_tip.y * h)
+            thumb_tip_px = [int(thumb_tip.x * w), int(thumb_tip.y * h)]
+            index_finger_tip_px = [int(index_finger_tip.x * w), int(index_finger_tip.y * h)]
+            middle_finger_tip_px = [int(middle_finger_tip.x * w), int(middle_finger_tip.y * h)]
+            # # ring_finger_tip_x, ring_finger_tip_y = int(ring_finger_tip.x * w), int(ring_finger_tip.y * h)
+            # # pinky_finger_tip_x, pinky_finger_tip_y = int(pinky_finger_tip.x * w), int(pinky_finger_tip.y * h)
 
             #To do: Mouse Functionalities to Create (move, rightclick, leftclick, Doubleclick, drag, scroll)
 
             # Move Cursor (using index)
             margin = 10
+
             mouse_x = max(margin, min(int(index_finger_tip.x * screen_w), screen_w - margin))
             mouse_y = max(margin, min(int(index_finger_tip.y * screen_h), screen_h - margin))
             threading.Thread(target=move_cursor, args=(mouse_x, mouse_y), daemon=True).start()
+
+            # Left Click
+            distance = euclidean_distance(thumb_tip_px, middle_finger_tip_px)
+            print(distance)
+            if distance < 30:
+                right_click(mouse_x, mouse_y)
+
+
 
 
 
