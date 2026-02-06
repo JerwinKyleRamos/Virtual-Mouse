@@ -7,6 +7,8 @@ import math
 from cursor_functions import move_cursor, right_click, left_click
 
 cam = cv2.VideoCapture(0)
+cam.set(3,1280)
+cam.set(4,720)
 
 mpHands = mp.solutions.hands
 handDetector = mpHands.Hands(max_num_hands=1, min_detection_confidence = 0.8, min_tracking_confidence=0.5)
@@ -62,6 +64,7 @@ while True:
             pinky_finger_tip = handLandmark.landmark[20]
 
             thumb_tip_px = [int(thumb_tip.x * w), int(thumb_tip.y * h)]
+            index_finger_tip_px = [int(index_finger_tip.x * w), int(index_finger_tip.y * h)]
             middle_finger_tip_px = [int(middle_finger_tip.x * w), int(middle_finger_tip.y * h)]
             ring_finger_tip_px = [int(ring_finger_tip.x * w), int(ring_finger_tip.y * h)]
             # # pinky_finger_tip_x, pinky_finger_tip_y = int(pinky_finger_tip.x * w), int(pinky_finger_tip.y * h)
@@ -72,9 +75,9 @@ while True:
 
             # Move Cursor (using index finger)
             margin = 5
-
             mouse_x = max(margin, min(int(index_finger_tip.x * screen_w), screen_w - margin))
             mouse_y = max(margin, min(int(index_finger_tip.y * screen_h), screen_h - margin))
+
             threading.Thread(target=move_cursor, args=(mouse_x, mouse_y), daemon=True).start()
 
             # Left Click
@@ -84,13 +87,28 @@ while True:
 
             # Right Click
             rc_distance = euclidean_distance(thumb_tip_px, ring_finger_tip_px)
-            print(rc_distance)
             if rc_distance < 30:
                 if not pinch:
                     right_click(mouse_x, mouse_y)
                     pinch = True
             else:
                 pinch = False
+
+            # Hold and Move
+            hm_distance = euclidean_distance(ring_finger_tip_px, middle_finger_tip_px)
+            print(hm_distance)
+            if hm_distance < 30:
+                if not pinch:
+                    pyautogui.mouseDown()
+                    dragging = True
+
+                pyautogui.moveTo(mouse_x, mouse_y)
+
+            elif hm_distance > 30:
+                if pinch:
+                    pyautogui.mouseUp()
+                    pinch = False
+
 
 
 
