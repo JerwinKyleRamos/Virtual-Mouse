@@ -2,7 +2,9 @@ import pyautogui
 
 #Move Cursor
 def move_cursor(x, y):
-    pyautogui.moveTo(x, y, duration=0.01)
+    pyautogui.moveTo(x, y)
+
+
 
 #Right Click
 def right_click(x,y):
